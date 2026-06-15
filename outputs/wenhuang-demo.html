@@ -1,0 +1,1244 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>文荒拯救器 - 锁味 demo</title>
+  <style>
+    :root {
+      --bg: #f4efe6;
+      --paper: #fffdf8;
+      --ink: #28231e;
+      --muted: #756d62;
+      --line: #e3d8c8;
+      --accent: #bd4b32;
+      --teal: #236d67;
+      --gold: #8a6f2c;
+      --soft: #fff4eb;
+      --teal-soft: #e5f0ec;
+      --shadow: 0 18px 45px rgba(67, 46, 27, .12);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 0, rgba(189,75,50,.12), transparent 330px),
+        radial-gradient(circle at 90% 10%, rgba(35,109,103,.1), transparent 330px),
+        var(--bg);
+    }
+    button, input, textarea { font: inherit; }
+    button { cursor: pointer; }
+    .shell { width: min(1180px, calc(100% - 32px)); margin: 0 auto; padding: 24px 0 54px; }
+    .top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+    h1 { margin: 0; font-size: clamp(30px, 4vw, 46px); line-height: 1.08; letter-spacing: 0; }
+    .lead { margin: 8px 0 0; color: var(--muted); line-height: 1.75; max-width: 700px; }
+    .notice {
+      flex: 0 0 auto;
+      border: 1px solid rgba(35,109,103,.22);
+      background: rgba(229,240,236,.72);
+      color: #245852;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .flow {
+      display: grid;
+      gap: 16px;
+    }
+    .input-panel {
+      max-width: 820px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .result-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 16px;
+      align-items: stretch;
+    }
+    .panel {
+      background: rgba(255,253,248,.92);
+      border: 1px solid rgba(227,216,200,.92);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .pad { padding: 18px; }
+    .compact-pad { padding: 16px 18px; }
+    .title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    h2 { margin: 0; font-size: 19px; letter-spacing: 0; }
+    .step { color: var(--accent); font-size: 13px; font-weight: 850; white-space: nowrap; }
+    .field { margin-bottom: 14px; }
+    label { display: block; margin-bottom: 7px; font-size: 14px; font-weight: 800; }
+    input, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fffaf1;
+      color: var(--ink);
+      outline: 0;
+      padding: 11px 12px;
+      line-height: 1.6;
+    }
+    textarea { min-height: 118px; resize: vertical; }
+    #longText { min-height: 170px; }
+    .safe-box {
+      border: 1px solid rgba(35,109,103,.2);
+      background: rgba(229,240,236,.62);
+      border-radius: 12px;
+      padding: 11px 12px;
+      color: #285c56;
+      font-size: 13px;
+      line-height: 1.65;
+      margin: 10px 0;
+    }
+    .file-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin: 10px 0;
+    }
+    .file-name {
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .check-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-top: 8px;
+      color: #4f4942;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+    .check-row input {
+      width: auto;
+      margin-top: 3px;
+      flex: 0 0 auto;
+    }
+    input:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(189,75,50,.1); }
+    .hint { margin-top: 6px; color: var(--muted); font-size: 12px; line-height: 1.55; }
+    .tabs, .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    .pill {
+      border: 1px solid var(--line);
+      background: #fffaf1;
+      border-radius: 999px;
+      padding: 8px 12px;
+      color: #50483f;
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .pill.active { border-color: rgba(189,75,50,.6); background: #f7e4da; color: var(--accent); }
+    .btn {
+      min-height: 44px;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      padding: 11px 15px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-weight: 850;
+      background: #efe3d4;
+      color: var(--ink);
+    }
+    .btn.primary { flex: 1 1 220px; background: var(--accent); color: white; }
+    .btn.secondary { background: var(--teal-soft); color: var(--teal); }
+    .btn.ghost { background: transparent; border-color: var(--line); color: #5a5249; }
+    .hidden { display: none !important; }
+    .stack { display: grid; gap: 16px; }
+    .cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .mini {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fffaf1;
+      padding: 12px;
+    }
+    .mini h3 { margin: 0 0 6px; font-size: 14px; }
+    .mini p { margin: 0; color: #4f4942; font-size: 13px; line-height: 1.65; }
+    .recipe { display: grid; gap: 9px; }
+    .recipe-line {
+      display: grid;
+      grid-template-columns: 84px minmax(0, 1fr);
+      gap: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(227,216,200,.76);
+      font-size: 13px;
+      line-height: 1.65;
+    }
+    .recipe-line:last-child { border-bottom: 0; }
+    .recipe-line b { color: var(--gold); }
+    .proposals {
+      margin-top: 8px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .proposal {
+      position: relative;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fffaf1;
+      padding: 14px;
+      min-height: 158px;
+      transition: transform .16s, border-color .16s, background .16s, box-shadow .16s;
+    }
+    .proposal:hover { transform: translateY(-1px); }
+    .proposal.selected { border-color: var(--accent); background: var(--soft); box-shadow: 0 12px 24px rgba(189,75,50,.12); }
+    .proposal.selected::after {
+      content: "已选择";
+      position: absolute;
+      right: 12px;
+      top: 12px;
+      border-radius: 999px;
+      background: var(--accent);
+      color: #fff;
+      padding: 4px 8px;
+      font-size: 12px;
+      font-weight: 850;
+    }
+    .badge {
+      display: inline-flex;
+      border-radius: 999px;
+      background: var(--teal-soft);
+      color: var(--teal);
+      padding: 4px 8px;
+      font-size: 12px;
+      font-weight: 850;
+      margin-bottom: 8px;
+    }
+    .proposal h3 { margin: 0 0 8px; font-size: 16px; }
+    .proposal p { margin: 5px 0 0; color: #4f4942; font-size: 13px; line-height: 1.5; }
+    .proposal b { color: var(--gold); }
+    .reader {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: linear-gradient(180deg, #fffdf8, #fff8ed);
+      padding: 22px;
+      max-height: 600px;
+      overflow: auto;
+      white-space: pre-wrap;
+      line-height: 1.9;
+      font-size: 16px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.7);
+    }
+    .check { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; margin-bottom: 12px; }
+    .score { border: 1px solid var(--line); border-radius: 12px; background: #fffaf1; padding: 10px; text-align: center; }
+    .score strong { display: block; color: var(--teal); font-size: 22px; line-height: 1; margin-bottom: 4px; }
+    .score span { color: var(--muted); font-size: 12px; }
+    .toast {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      max-width: min(420px, calc(100% - 36px));
+      background: #28231e;
+      color: #fff;
+      border-radius: 12px;
+      padding: 12px 14px;
+      box-shadow: 0 18px 40px rgba(0,0,0,.24);
+      opacity: 0;
+      transform: translateY(12px);
+      pointer-events: none;
+      transition: .2s ease;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .status-note {
+      display: none;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fffaf1;
+      color: var(--muted);
+      padding: 10px 12px;
+      font-size: 13px;
+      line-height: 1.6;
+      margin: 10px 0;
+    }
+    .status-note.show { display: block; }
+    .status-note.error {
+      border-color: rgba(189,75,50,.35);
+      background: #fff1e9;
+      color: #8f3522;
+    }
+    .status-note.ok {
+      border-color: rgba(35,109,103,.25);
+      background: var(--teal-soft);
+      color: var(--teal);
+    }
+    @media (max-width: 920px) {
+      .top { flex-direction: column; }
+      .notice { border-radius: 12px; }
+      .result-grid, .proposals { grid-template-columns: 1fr; }
+      .cards, .check { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 560px) {
+      .shell { width: min(100% - 22px, 1180px); padding-top: 14px; }
+      .pad { padding: 14px; }
+      .cards, .check { grid-template-columns: 1fr; }
+      .recipe-line { grid-template-columns: 1fr; gap: 2px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="top">
+      <div>
+        <h1>文荒拯救器</h1>
+        <p class="lead">不用挑最好的一段。贴几段、粘长文，或只说感觉，我会提取共同的上头配方，再生成原创精神代餐。</p>
+      </div>
+      <div class="notice">只提取抽象阅读体验，不复用原作人物、地名、专有设定和具体桥段</div>
+    </header>
+
+    <section class="flow">
+      <section class="panel input-panel">
+        <div class="pad">
+          <div class="title">
+            <h2>告诉我你为什么文荒</h2>
+            <span class="step">步骤 1</span>
+          </div>
+          <div class="field">
+            <label for="bookName">你刚看完什么</label>
+            <input id="bookName" placeholder="例如：强照顾感、强拉扯的暧昧文">
+          </div>
+          <div class="field">
+            <label>输入方式</label>
+            <div class="tabs">
+              <button class="pill active" data-input-mode="clips">随便贴几段</button>
+              <button class="pill" data-input-mode="long">高级分析：我整篇都喜欢</button>
+              <button class="pill" data-input-mode="feeling">只说感觉</button>
+            </div>
+            <div class="hint">如果每段都喜欢，说明你喜欢的是稳定配方，不是某个桥段。</div>
+          </div>
+          <div class="field input-mode" id="clipsMode">
+            <label for="sampleText">贴几段有味儿的地方</label>
+            <textarea id="sampleText" placeholder="3 段左右最好。可以用空行或 --- 分开：日常互动、情绪拉扯、对话高光。"></textarea>
+          </div>
+          <div class="field input-mode hidden" id="longMode">
+            <label for="longText">高级分析：上传你有权使用的长文本</label>
+            <div class="safe-box">
+              适合你整篇都喜欢、想提取稳定口感的情况。当前 demo 会在本地读取文本并模拟抽样分析；生成时只使用抽象配方，不复用原文句子、人物、地名、专有设定和具体桥段。
+            </div>
+            <div class="file-row">
+              <input class="hidden" id="fileInput" type="file" accept=".txt,text/plain">
+              <label class="btn secondary" for="fileInput">选择 txt 文本</label>
+              <span class="file-name" id="fileName">免费体验最大 3MB；付费版规划约 20MB。也可以直接粘贴到下面</span>
+            </div>
+            <textarea id="longText" placeholder="粘贴你有权使用的长文本，或选择 txt 文件。"></textarea>
+            <label class="check-row" for="rightsConfirm">
+              <input id="rightsConfirm" type="checkbox">
+              <span>我确认上传/粘贴内容为本人创作、已获授权，或仅用于提取抽象阅读体验的合理片段；我理解本工具不会复用原文具体表达。</span>
+            </label>
+          </div>
+          <div class="field" id="feelingMode">
+            <label for="thrill">你最舍不得的爽点</label>
+            <textarea id="thrill" placeholder="例如：一个人主动照顾又会逗，另一个嘴硬害羞，被靠近时越躲越慌。"></textarea>
+          </div>
+          <div class="field">
+            <label for="avoid">避雷区</label>
+            <input id="avoid" placeholder="例如：不要兄弟义气、不要战场、不要玉佩、不要大段解释心理">
+          </div>
+          <div class="status-note" id="statusNote"></div>
+          <div class="actions">
+            <button class="btn primary" id="analyzeBtn">分析我的上头点</button>
+            <button class="btn ghost" id="loadExampleBtn">载入示例口味</button>
+          </div>
+        </div>
+      </section>
+
+      <div class="result-grid">
+        <section class="panel hidden" id="analysisPanel">
+          <div class="compact-pad">
+            <div class="title">
+              <h2>上头机制预览</h2>
+              <span class="step">步骤 2</span>
+            </div>
+            <div class="cards" id="analysisCards"></div>
+          </div>
+        </section>
+        <section class="panel hidden" id="lockPanel">
+          <div class="compact-pad">
+            <div class="title">
+              <h2>锁味层</h2>
+              <span class="step">动态提取</span>
+            </div>
+            <div class="recipe" id="lockRecipe"></div>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="panel hidden" id="proposalsPanel" style="margin-top:16px">
+      <div class="pad">
+        <div class="title">
+          <h2>选择一个原创代餐方向</h2>
+          <span class="step">步骤 3</span>
+        </div>
+        <div class="proposals" id="proposalList"></div>
+        <div class="actions">
+          <button class="btn primary" id="trialBtn">生成免费试读</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel hidden" id="trialPanel" style="margin-top:16px">
+      <div class="pad">
+        <div class="title">
+          <h2 id="trialTitle">免费试读</h2>
+          <span class="step" id="trialMode">步骤 4</span>
+        </div>
+        <div class="check" id="styleCheck"></div>
+        <div class="reader" id="trialText"></div>
+        <div class="actions">
+          <button class="btn primary" id="continueBtn">继续看下一段</button>
+          <button class="btn secondary" id="tuneBtn">少点解释，多点拉扯</button>
+          <button class="btn ghost" id="copyBtn">复制试读</button>
+        </div>
+      </div>
+    </section>
+  </main>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const state = {
+      inputMode: "clips",
+      analysis: null,
+      selectedProposal: 0,
+      continuation: 0,
+      lessExplanation: false,
+      currentText: ""
+    };
+    const FREE_UPLOAD_LIMIT_MB = 3;
+    const PAID_UPLOAD_LIMIT_MB = 20;
+    let aiProposals = null;
+
+    const exampleText = `语言未落，发热的唇按了下来。时书浑身的冰凉气雾时被袭去，时书脸也被捧住，啄吻着唇，谢无炽暗色的瞳孔静谧地看着他。
+时书刚想说话就被搂住了腰，视线陷入昏暗。黑暗中，唇上的触觉便尤为清晰。
+谢无炽问：“感觉好吗？”
+时书：“不好。”
+
+---
+
+时书想从他腿上起来，但被抱得紧紧的起不来，转移话题：“点心，吃一块？”
+“宝宝喂我。”谢无炽并要时书喂，时书只好做足心理准备喂他一块，谢无炽一边吃，把时书按进了怀里抱着。
+
+---
+
+陆停舟把药碗递过去，对方偏开脸不接。他也不急，只把蜜饯放在掌心，低声问：“真不要？”
+“不要。”
+“那我吃了。”
+手刚收回去，袖口就被轻轻拽住。对方不看他，耳尖却红得厉害：“……也没说不要。”`;
+
+    function toast(text) {
+      const el = $("toast");
+      el.textContent = text;
+      el.classList.add("show");
+      setTimeout(() => el.classList.remove("show"), 2200);
+    }
+
+    function setStatus(text, type = "") {
+      const el = $("statusNote");
+      el.textContent = text || "";
+      el.className = `status-note ${text ? "show" : ""} ${type}`;
+    }
+
+    function hasAny(text, words) { return words.some((w) => text.includes(w)); }
+    function uniq(items) { return [...new Set(items.filter(Boolean))]; }
+    async function postJson(url, payload) {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.error) throw new Error(data.error || `请求失败：${res.status}`);
+      return data;
+    }
+
+    function setInputMode(mode) {
+      state.inputMode = mode;
+      document.querySelectorAll("[data-input-mode]").forEach((btn) => btn.classList.toggle("active", btn.dataset.inputMode === mode));
+      $("clipsMode").classList.toggle("hidden", mode !== "clips");
+      $("longMode").classList.toggle("hidden", mode !== "long");
+      $("feelingMode").classList.remove("hidden");
+    }
+
+    function summarizeLongText(text) {
+      const chunks = text
+        .split(/\n\s*\n|第[一二三四五六七八九十百千0-9]+章|---+/)
+        .map((part) => part.trim())
+        .filter((part) => part.length > 40);
+      const dialogueHeavy = chunks.filter((part) => (part.match(/[“”]/g) || []).length >= 4);
+      const touchHeavy = chunks.filter((part) => hasAny(part, ["抱", "亲", "吻", "腰", "怀里", "脸红", "宝宝", "唇", "腿上", "喂", "摸", "贴", "扣住"]));
+      const sample = uniq([...dialogueHeavy.slice(0, 6), ...touchHeavy.slice(0, 6), ...chunks.slice(0, 4)]);
+      return sample.join("\n\n---\n\n") || text.slice(0, 5000);
+    }
+
+    async function analyze() {
+      const book = $("bookName").value.trim();
+      let text = state.inputMode === "long" ? $("longText").value.trim() : $("sampleText").value.trim();
+      const thrill = $("thrill").value.trim();
+      const avoid = $("avoid").value.trim();
+      if (state.inputMode === "long") {
+        if (!$("rightsConfirm").checked) return toast("请先确认你有权使用该文本，或仅用于抽象体验提取。");
+        text = summarizeLongText(text);
+      }
+      const source = [book, text, thrill, avoid].join("\n");
+      if (!source.trim()) return toast("先填一点作品、片段、长文本或爽点。");
+
+      $("analyzeBtn").disabled = true;
+      $("analyzeBtn").textContent = "AI 正在分析...";
+      setStatus("AI 正在抽样分析文本，长文本可能需要 20-60 秒。请不要重复点击。");
+      try {
+        state.analysis = await postJson("/api/analyze", { bookName: book, text, thrill, avoid, inputMode: state.inputMode });
+        state.continuation = 0;
+        state.currentText = "";
+        aiProposals = null;
+        renderAnalysis();
+        renderLock();
+        setStatus("锁味分析完成，正在生成 3 个原创代餐方向...");
+        await loadProposals();
+        $("analysisPanel").classList.remove("hidden");
+        $("lockPanel").classList.remove("hidden");
+        $("proposalsPanel").classList.remove("hidden");
+        $("proposalsPanel").scrollIntoView({ behavior: "smooth", block: "start" });
+        setStatus("分析完成。请选择一个代餐方向生成试读。", "ok");
+        toast("智谱 AI 已完成锁味分析。");
+        return;
+      } catch (error) {
+        setStatus(error.message, "error");
+        toast(error.message);
+        return;
+      } finally {
+        $("analyzeBtn").disabled = false;
+        $("analyzeBtn").textContent = "分析我的上头点";
+      }
+
+      const clipCount = text ? text.split(/\n\s*\n|---+/).map((p) => p.trim()).filter(Boolean).length : 0;
+      const stable = clipCount >= 2 || text.length > 700 || state.inputMode === "long";
+      const intimate = hasAny(source, ["抱", "亲", "吻", "腰", "怀里", "脸红", "宝宝", "唇", "腿上", "喂", "点心", "摸", "贴", "蜜饯"]);
+      const dodge = hasAny(source, ["躲", "不好", "不要", "别", "转移话题", "起不来", "脸红"]);
+
+      const dynamic = intimate ? "强势温柔照顾者 × 嘴硬害羞被照顾者" : "当前文本的核心角色关系";
+      const scenes = intimate
+        ? ["喂食或递东西", "摸额头/扣手腕/压近距离", "用玩笑逼对方承认", "脸红后转移话题"]
+        : ["短冲突推进", "关键动作互动", "章末钩子"];
+      const forbidden = intimate
+        ? ["改成兄弟", "改成战友", "突然加玉佩战场", "用旁白解释暧昧"]
+        : ["大段心理解释", "剧情摘要腔", "无关大设定"];
+
+      state.analysis = {
+        input_summary: state.inputMode === "long"
+          ? "长文本抽样提取：优先保留反复出现的稳定口感"
+          : stable
+            ? "多段共同提取：优先保留反复出现的稳定配方"
+            : "单段/感觉提取：保留当前最明显的口感",
+        thrill: thrill || (intimate ? "亲密照顾里的拉扯感和被看穿的羞恼" : "当前文本的核心阅读快感"),
+        avoid: avoid || forbidden.join("、"),
+        character_lock: {
+          relationship_dynamic: dynamic,
+          role_a: intimate ? "主动、会逗人、照顾欲强，靠行动逼近对方" : "推动冲突的人",
+          role_b: intimate ? "嘴硬、害羞、容易躲，越被照顾越慌" : "承受压力并反应的人",
+          interaction: stable ? uniq([...scenes, "反复出现的同类互动节奏"]) : scenes,
+          forbidden
+        },
+        voice_fingerprint: {
+          rhythm: intimate ? "短句为主，反问和停顿多；对话穿插动作" : "中短句，围绕冲突推进",
+          emotion: "情绪藏在动作、表情、沉默、距离变化里",
+          forbidden_tone: ["复杂情感泛滥", "命运感空话", "大段心理解释", "剧情摘要腔"]
+        }
+      };
+      state.continuation = 0;
+      renderAnalysis();
+      renderLock();
+      renderProposals();
+      $("analysisPanel").classList.remove("hidden");
+      $("lockPanel").classList.remove("hidden");
+      $("proposalsPanel").classList.remove("hidden");
+      toast("已提取锁味层，可以选代餐方向了。");
+    }
+
+    function renderAnalysis() {
+      const a = state.analysis;
+      const cards = [
+        ["输入判断", a.input_summary],
+        ["核心爽点", a.thrill],
+        ["角色关系", a.character_lock.relationship_dynamic],
+        ["语言口感", a.voice_fingerprint.rhythm]
+      ];
+      $("analysisCards").innerHTML = cards.map(([k, v]) => `<div class="mini"><h3>${k}</h3><p>${v}</p></div>`).join("");
+    }
+
+    function renderLock() {
+      const a = state.analysis;
+      const lines = [
+        ["关系锁定", a.character_lock.relationship_dynamic],
+        ["角色 A", a.character_lock.role_a],
+        ["角色 B", a.character_lock.role_b],
+        ["语言指纹", a.voice_fingerprint.rhythm],
+        ["禁止漂移", uniq([...a.character_lock.forbidden, ...a.voice_fingerprint.forbidden_tone]).join("、")]
+      ];
+      $("lockRecipe").innerHTML = lines.map(([k, v]) => `<div class="recipe-line"><b>${k}</b><span>${v}</span></div>`).join("");
+    }
+
+    function buildProposals() {
+      if (aiProposals && aiProposals.length) return aiProposals;
+      return [
+        { badge: "熟悉口味", title: "《灯下温差》", keep: "病中照顾 / 短句拉扯 / 嘴硬脸红", diff: "原创人物与新事件，场景贴近日常照顾。", reader: "想找回原味" },
+        { badge: "新设定同爽点", title: "《借雪靠近》", keep: "照顾推进 / 躲避反驳 / 动作暧昧", diff: "雨夜药铺、包扎伤口、递伞试药。", reader: "想要新设定但不丢味" },
+        { badge: "反差新口味", title: "《不许退后》", keep: "暧昧拉扯 / 短句试探 / 边界感", diff: "被照顾者主动试探，照顾者克制失守。", reader: "想跳出原框架" }
+      ];
+    }
+
+    async function loadProposals() {
+      const data = await postJson("/api/proposals", { analysis: state.analysis });
+      aiProposals = data.proposals || [];
+      if (!aiProposals.length) throw new Error("AI 没有返回代餐方案。");
+      state.selectedProposal = 0;
+      renderProposals();
+    }
+
+    function renderProposals() {
+      $("proposalList").innerHTML = buildProposals().map((p, i) => `
+        <article class="proposal ${state.selectedProposal === i ? "selected" : ""}" data-proposal="${i}">
+          <span class="badge">${p.badge}</span>
+          <h3>${p.title}</h3>
+          <p><b>保留：</b>${p.keep}</p>
+          <p><b>变化：</b>${p.diff}</p>
+          <p><b>适合：</b>${p.reader}</p>
+        </article>
+      `).join("");
+      document.querySelectorAll("[data-proposal]").forEach((card) => {
+        card.addEventListener("click", () => {
+          state.selectedProposal = Number(card.dataset.proposal);
+          state.continuation = 0;
+          state.currentText = "";
+          renderProposals();
+        });
+      });
+    }
+
+    function getGenerationPlan() {
+      const plans = [
+        { mode: "熟悉口味", scene: "屋里只点了一盏灯", prop: "一碗温药", sweet: "蜜饯", first: "醒着就别装。", hook: "先喝。" },
+        { mode: "新设定同爽点", scene: "雨夜的药铺后院", prop: "一卷干净的绷带", sweet: "糖渍青梅", first: "手伸出来。", hook: "伞给你，手给我。" },
+        { mode: "反差新口味", scene: "廊下的风把灯吹得一明一暗", prop: "半盏冷茶", sweet: "一颗没送出去的糖", first: "你不是说要看着我好没好吗？", hook: "别退，这次轮到我问。" }
+      ];
+      return plans[state.selectedProposal] || plans[0];
+    }
+
+    function familiar(plan) {
+      return `${plan.scene}。
+
+许知白靠在软榻上，外袍松松搭着，额前的碎发被汗浸湿。听见脚步声，他立刻闭上眼，装得很安静。
+
+林停端着${plan.prop}进来，站在榻边看了他一会儿。
+
+“${plan.first}”
+
+许知白睫毛动了动。
+
+“没醒。”
+
+“没醒还会顶嘴？”
+
+许知白慢慢睁开眼，看见那碗药，眉头先皱起来。
+
+“我好了。”
+
+林停抬手，指背贴上他的额头。许知白往后一躲，没躲开。
+
+“好得挺快。”林停垂眼看他，“还能烧成这样。”
+
+“你别总摸我。”
+
+“那你自己喝。”
+
+许知白盯着药碗，半天没动。
+
+林停舀了一勺药，吹了吹，送到他唇边。
+
+“张嘴。”
+
+“不喝。”
+
+“苦？”
+
+“不是。”
+
+“那是什么？”
+
+许知白抿着唇，不说话。
+
+林停靠近了些，声音压低：“要我哄？”
+
+许知白猛地看他：“谁要你哄。”
+
+药勺又往前递了一点，几乎碰到他的唇。许知白退无可退，最后还是张口含住。
+
+刚咽下去，他眉头就皱得更紧。
+
+林停把${plan.sweet}递过去。
+
+许知白伸手要拿，却被他躲开。
+
+“喊一声。”
+
+“什么？”
+
+“喊好听点，就给你。”
+
+许知白的脸一下红到耳根。
+
+“林停。”
+
+“嗯。”
+
+“你有病。”
+
+“我没烧。”
+
+他气得想抢，手刚伸出去，腕子就被林停轻轻扣住。两人离得近了，近到许知白能看见林停眼底那点藏不住的笑。
+
+“你别闹了。”
+
+林停终于把${plan.sweet}送到他嘴边。
+
+“吃吧。”
+
+许知白咬住时，不小心碰到他的指尖。
+
+两个人都停了一瞬。
+
+林停低声道：“${plan.hook}”`;
+    }
+
+    function newSetting(plan) {
+      return `${plan.scene}。
+
+许知白坐在药柜旁，袖口被雨水洇湿了一片，手背上还留着一道浅浅的血痕。他把手藏进袖子里，像这样就没人看见。
+
+林停撑着伞从后门进来，伞沿滴着水，另一只手里拿着药粉和绷带。
+
+“${plan.first}”
+
+许知白立刻把袖子往回收。
+
+“没事。”
+
+“没事会把血蹭到柜门上？”
+
+许知白低头一看，柜门边果然有一点淡红。他沉默片刻，抬眼反驳：“那也不是我的。”
+
+林停没说话，只看着他。
+
+雨声顺着屋檐落下来，把这点沉默敲得很清楚。
+
+“看什么？”
+
+“看你还能编到什么时候。”
+
+“我没有编。”
+
+“那手给我。”
+
+许知白不动。
+
+林停俯身，没有硬拽，只把掌心摊在许知白面前。
+
+“自己放上来。”
+
+许知白看着那只手，像看着什么陷阱。
+
+“你处理伤口就处理伤口，离这么近做什么？”
+
+“怕你跑。”
+
+“我跑什么？”
+
+“怕疼的人都跑。”
+
+许知白立刻抬眼：“谁怕疼？”
+
+药粉碰到伤口时，许知白指尖一颤，嘴上却硬得很。
+
+“不疼。”
+
+“嗯。”
+
+“你嗯什么？”
+
+“嗯你不疼。”
+
+林停低着头替他缠绷带，指腹偶尔擦过他的手背。许知白本来想缩，缩到一半又忍住，耳尖却慢慢红了。
+
+“你手凉。”
+
+“嫌凉？”
+
+“没有。”
+
+林停抬眼看他。
+
+“那为什么抖？”
+
+许知白一下把脸偏开。
+
+“雨冷。”
+
+林停把那颗${plan.sweet}放进他没受伤的手心。
+
+“奖励。”
+
+“我又不是小孩。”
+
+“小孩才不会把伤藏起来。”
+
+林停撑开伞，伞影落下来，把两个人罩在一小片暗处。
+
+他把伞柄递过去，许知白刚接住，手腕却又被轻轻扣住。
+
+林停低声道：“${plan.hook}”`;
+    }
+
+    function twist(plan) {
+      return `${plan.scene}。
+
+林停刚要走，袖口却被人从后面轻轻拽住。
+
+许知白坐在栏边，脸色还有些白，偏偏眼神比平时直。
+
+林停回头，目光落在那只拽着他袖口的手上。
+
+“松开。”
+
+许知白没松。
+
+“${plan.first}”
+
+林停静了片刻。
+
+“现在不用。”
+
+“为什么？”
+
+“你已经退烧了。”
+
+许知白慢慢眨了下眼。
+
+“退烧了就不能看？”
+
+这句话说得太轻，轻到像是随口一问。可他手指还扣着林停的袖口，没放。
+
+林停垂眼看他。
+
+“你知道自己在说什么吗？”
+
+许知白耳尖已经红了，嘴上却还硬。
+
+“我问一句而已。”
+
+“问完了？”
+
+“没有。”
+
+林停本该走的。
+
+他站在廊下，风把灯吹得一晃一晃，许知白坐在栏边，仰头看他，像终于学会了怎么把人留下。
+
+林停低声道：“别闹。”
+
+许知白笑了一下。
+
+“你以前不是最喜欢闹我？”
+
+林停的喉结动了动。
+
+许知白把那盏冷茶往他面前推了推。
+
+“喝吗？”
+
+“冷了。”
+
+“你不是不怕？”
+
+林停看他：“跟谁学的？”
+
+“你。”
+
+许知白说完就后悔了，耳朵红得更厉害，手却还没松。
+
+林停终于俯身，手撑在他身侧的栏杆上。
+
+距离一下近了。
+
+许知白本能地往后一躲，刚躲半寸，又硬生生停住。
+
+林停看见了，眼底那点克制几乎被他这一停撞散。
+
+“不躲了？”
+
+“谁躲了。”
+
+“你。”
+
+“我没有。”
+
+许知白抿唇，半天才把掌心里那颗糖拿出来，递到他嘴边。
+
+“堵你的嘴。”
+
+林停没有接。
+
+他就着许知白的手，低头咬走了那颗糖。
+
+指尖被唇碰到的一瞬，许知白整个人都僵住。
+
+林停抬眼看他。
+
+“现在知道怕了？”
+
+许知白声音很低。
+
+“没有。”
+
+“那手别抖。”
+
+许知白的手被他握住，指尖还烫着。
+
+他沉默片刻，忽然反握回去。
+
+林停一顿。
+
+许知白红着耳朵，声音却比刚才稳。
+
+“${plan.hook}”`;
+    }
+
+    function continuation(plan, step) {
+      if (step > 1) {
+        if (plan.mode === "反差新口味") return `屋里的灯终于被风吹灭了一瞬。
+
+黑暗落下来时，许知白下意识攥紧了林停的手。
+
+林停没有动。
+
+“怕黑？”
+
+“没有。”
+
+“那你抓这么紧？”
+
+许知白沉默了片刻，声音低得几乎被风声盖住。
+
+“怕你又走。”
+
+林停的指尖停了一下。
+
+下一瞬，他反手把人扣得更稳。
+
+“不走。”
+
+许知白抬眼。
+
+林停低声补了一句：“今晚不走。”`;
+
+        if (plan.mode === "新设定同爽点") return `回到前堂时，药炉还温着。
+
+许知白把伞放下，刚想把手抽回来，林停就先一步松开了。
+
+他反倒愣了下。
+
+林停看见了。
+
+“怎么？”
+
+“没什么。”
+
+“想让我牵着？”
+
+许知白差点被门槛绊住。
+
+“谁想？”
+
+林停把湿了的外袍搭到一旁，慢条斯理地回头。
+
+“那你刚才在等什么？”
+
+许知白耳尖一点点红起来，嘴上还硬。
+
+“等你让路。”
+
+林停笑了笑，侧身让开。
+
+“行，你过。”
+
+许知白走过去时，袖口又被他轻轻勾住。
+
+“不过手还是要换药。”`;
+
+        return `药喝完后，屋里安静了好一会儿。
+
+许知白以为林停终于要走，刚松一口气，被角就又被人压了压。
+
+“你还不走？”
+
+“你不是睡不着？”
+
+“我现在困了。”
+
+“那睡。”
+
+许知白闭上眼。
+
+过了片刻，又睁开。
+
+林停还坐在榻边，指间转着那颗没给出去的蜜饯。
+
+“你看我做什么？”
+
+“看你睡。”
+
+“谁被看着睡得着？”
+
+林停把蜜饯放到他枕边。
+
+“那闭眼，我不看。”
+
+许知白真的闭上了眼。
+
+可林停刚移开视线，他就小声道：“也不是完全不让你看。”`;
+      }
+
+      if (plan.mode === "新设定同爽点") return `雨还没停。
+
+林停撑着伞，伞面向许知白那边偏了大半，自己的肩却被雨打湿了一片。
+
+许知白看见了，皱眉。
+
+“伞拿正。”
+
+“拿正你就淋了。”
+
+“我没那么娇气。”
+
+“刚才药粉碰一下都抖。”
+
+“那是冷。”
+
+林停侧过眼看他。
+
+许知白立刻把脸转开：“看路。”
+
+伞下地方小，两个人的袖子时不时擦在一起。许知白想往旁边挪，刚动一下，包好的手就被林停扣住。
+
+“别乱动。”
+
+“我走路。”
+
+“你这是逃。”
+
+许知白被他说中，耳尖一点点红起来。`;
+
+      if (plan.mode === "反差新口味") return `那句话落下后，廊下安静了很久。
+
+林停没有退，也没有立刻靠近。
+
+许知白反倒先受不住，手指蜷了一下。
+
+“你怎么不说话？”
+
+“在想。”
+
+“想什么？”
+
+林停低头看着他，声音压得很低。
+
+“想你今天胆子怎么这么大。”
+
+许知白的脸又热起来。
+
+“我一直这样。”
+
+“是吗？”
+
+“是。”
+
+林停忽然松开他的手。
+
+许知白怔了一下，眼底那点强撑出来的镇定几乎立刻散了。
+
+林停没有走，只是把那只手重新递到他面前。
+
+“那你自己来。”`;
+
+      return `窗外雨声又密了些。
+
+林停把空碗搁到一旁，没急着走，只把温过的帕子搭在指间，低头替许知白擦掉颈侧那点汗。
+
+许知白往被子里缩。
+
+“别碰。”
+
+“现在知道躲了？”
+
+“我没躲。”
+
+林停看着他，手停在半空，像是真打算听他的。
+
+许知白等了片刻，没等到那点凉意落下来，反倒先不自在起来。他睫毛动了动，声音压得很低：“……也不是不让你碰。”
+
+林停笑了一声。
+
+许知白立刻抬眼：“你笑什么？”
+
+“笑你讲道理。”`;
+    }
+
+    function generateTrial(options = {}) {
+      if (!state.analysis) return toast("先分析上头点。");
+      const plan = getGenerationPlan();
+      const isAppend = options.append === true;
+      const text = isAppend
+        ? continuation(plan, state.continuation)
+        : plan.mode === "新设定同爽点"
+          ? newSetting(plan)
+          : plan.mode === "反差新口味"
+            ? twist(plan)
+            : familiar(plan);
+      if (isAppend && state.currentText) {
+        state.currentText = `${state.currentText}\n\n—— 继续 ${state.continuation} ——\n\n${text.trim()}`;
+      } else {
+        state.currentText = text.trim();
+        if (!isAppend) state.continuation = 0;
+      }
+      $("trialTitle").textContent = `免费试读：${buildProposals()[state.selectedProposal].title}`;
+      $("trialMode").textContent = plan.mode;
+      $("trialText").textContent = state.currentText;
+      renderStyleCheck();
+      $("trialPanel").classList.remove("hidden");
+      $("trialPanel").scrollIntoView({ behavior: "smooth", block: "start" });
+      if (isAppend) {
+        $("trialText").scrollTop = $("trialText").scrollHeight;
+        toast("已追加下一段。");
+      } else {
+        toast("试读已按所选方向生成。");
+      }
+    }
+
+    function renderStyleCheck() {
+      const scores = [["92", "角色关系"], ["90", "语言口感"], ["94", "互动方式"], ["88", "原创差异"]];
+      $("styleCheck").innerHTML = scores.map(([n, label]) => `<div class="score"><strong>${n}</strong><span>${label}</span></div>`).join("");
+    }
+
+    function renderAiStyleCheck(check) {
+      const scores = [
+        [check?.relationship ?? "-", "角色关系"],
+        [check?.voice ?? "-", "语言口感"],
+        [check?.interaction ?? "-", "互动方式"],
+        [check?.originality ?? "-", "原创差异"]
+      ];
+      $("styleCheck").innerHTML = scores.map(([n, label]) => `<div class="score"><strong>${n}</strong><span>${label}</span></div>`).join("");
+    }
+
+    async function generateAiTrial(options = {}) {
+      if (!state.analysis) return toast("先分析上头点。");
+      const isAppend = options.append === true;
+      const proposal = buildProposals()[state.selectedProposal];
+      $("trialBtn").disabled = !isAppend;
+      $("continueBtn").disabled = isAppend;
+      if (!isAppend) $("trialBtn").textContent = "AI 正在生成试读...";
+      if (isAppend) $("continueBtn").textContent = "AI 正在续写...";
+      try {
+        const data = await postJson("/api/generate", {
+          analysis: state.analysis,
+          proposal,
+          append: isAppend,
+          currentText: state.currentText
+        });
+        const content = String(data.content || "").trim();
+        if (!content) throw new Error("AI 没有返回正文。");
+        if (isAppend && state.currentText) {
+          state.currentText = `${state.currentText}\n\n—— 继续 ${state.continuation} ——\n\n${content}`;
+        } else {
+          state.currentText = content;
+          state.continuation = 0;
+        }
+        $("trialTitle").textContent = `免费试读：${proposal.title || "原创代餐"}`;
+        $("trialMode").textContent = proposal.badge || "AI 生成";
+        $("trialText").textContent = state.currentText;
+        renderAiStyleCheck(data.style_check || {});
+        $("trialPanel").classList.remove("hidden");
+        $("trialPanel").scrollIntoView({ behavior: "smooth", block: "start" });
+        if (isAppend) $("trialText").scrollTop = $("trialText").scrollHeight;
+        toast(isAppend ? "AI 已追加下一段。" : "AI 试读已生成。");
+      } catch (error) {
+        toast(error.message);
+      } finally {
+        $("trialBtn").disabled = false;
+        $("continueBtn").disabled = false;
+        $("trialBtn").textContent = "生成免费试读";
+        $("continueBtn").textContent = "继续看下一段";
+      }
+    }
+
+    $("analyzeBtn").addEventListener("click", analyze);
+    $("loadExampleBtn").addEventListener("click", () => {
+      $("bookName").value = "强照顾感、强拉扯的暧昧文";
+      $("sampleText").value = exampleText;
+      $("longText").value = "";
+      $("thrill").value = "一个人主动照顾又会逗，另一个嘴硬害羞，被靠近时越躲越慌。";
+      $("avoid").value = "不要兄弟义气、不要战场、不要玉佩、不要大段解释心理";
+      toast("示例已载入，可以直接分析。");
+    });
+    $("trialBtn").addEventListener("click", () => generateAiTrial());
+    $("continueBtn").addEventListener("click", () => {
+      if (!state.currentText) return toast("先生成免费试读，再继续看下一段。");
+      state.continuation += 1;
+      generateAiTrial({ append: true });
+    });
+    $("tuneBtn").addEventListener("click", () => {
+      state.lessExplanation = true;
+      state.currentText = "";
+      state.continuation = 0;
+      generateAiTrial();
+    });
+    $("copyBtn").addEventListener("click", async () => {
+      const text = $("trialText").textContent.trim();
+      if (!text) return;
+      await navigator.clipboard.writeText(text).catch(() => {});
+      toast("试读已复制。");
+    });
+    $("fileInput").addEventListener("change", async (event) => {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      if (file.size > FREE_UPLOAD_LIMIT_MB * 1024 * 1024) {
+        toast(`免费体验支持 ${FREE_UPLOAD_LIMIT_MB}MB 以内 txt；付费版规划支持约 ${PAID_UPLOAD_LIMIT_MB}MB。`);
+        return;
+      }
+      const text = await file.text();
+      $("longText").value = text;
+      $("fileName").textContent = `${file.name} · ${(file.size / 1024).toFixed(1)} KB`;
+      setInputMode("long");
+      toast("文本已读取，请确认授权边界后分析。");
+    });
+    document.querySelectorAll("[data-input-mode]").forEach((btn) => btn.addEventListener("click", () => setInputMode(btn.dataset.inputMode)));
+  </script>
+</body>
+</html>
