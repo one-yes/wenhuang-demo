@@ -353,6 +353,11 @@
             <label for="avoid">避雷区</label>
             <input id="avoid" placeholder="例如：不要兄弟义气、不要战场、不要玉佩、不要大段解释心理">
           </div>
+          <div class="field">
+            <label for="inviteCode">内测邀请码</label>
+            <input id="inviteCode" autocomplete="off" placeholder="例如：reader001">
+            <div class="hint">C 端体验用户不用填写 API Key，只需要输入你发放的邀请码；每个邀请码每天有固定 AI 使用次数。</div>
+          </div>
           <div class="status-note" id="statusNote"></div>
           <div class="actions">
             <button class="btn primary" id="analyzeBtn">分析我的上头点</button>
@@ -458,6 +463,15 @@
       el.className = `status-note ${text ? "show" : ""} ${type}`;
     }
 
+    function getInviteCode() {
+      return $("inviteCode").value.trim();
+    }
+
+    function usageText(usage) {
+      if (!usage) return "";
+      return ` 今日额度：${usage.used}/${usage.limit}`;
+    }
+
     function hasAny(text, words) { return words.some((w) => text.includes(w)); }
     function uniq(items) { return [...new Set(items.filter(Boolean))]; }
     async function postJson(url, payload) {
@@ -495,6 +509,8 @@
       let text = state.inputMode === "long" ? $("longText").value.trim() : $("sampleText").value.trim();
       const thrill = $("thrill").value.trim();
       const avoid = $("avoid").value.trim();
+      const inviteCode = getInviteCode();
+      if (!inviteCode) return toast("请先输入内测邀请码。");
       if (state.inputMode === "long") {
         if (!$("rightsConfirm").checked) return toast("请先确认你有权使用该文本，或仅用于抽象体验提取。");
         text = summarizeLongText(text);
@@ -506,7 +522,7 @@
       $("analyzeBtn").textContent = "AI 正在分析...";
       setStatus("AI 正在抽样分析文本，长文本可能需要 20-60 秒。请不要重复点击。");
       try {
-        state.analysis = await postJson("/api/analyze", { bookName: book, text, thrill, avoid, inputMode: state.inputMode });
+        state.analysis = await postJson("/api/analyze", { inviteCode, bookName: book, text, thrill, avoid, inputMode: state.inputMode });
         state.continuation = 0;
         state.currentText = "";
         aiProposals = null;
@@ -518,7 +534,7 @@
         $("lockPanel").classList.remove("hidden");
         $("proposalsPanel").classList.remove("hidden");
         $("proposalsPanel").scrollIntoView({ behavior: "smooth", block: "start" });
-        setStatus("分析完成。请选择一个代餐方向生成试读。", "ok");
+        setStatus(`分析完成。请选择一个代餐方向生成试读。${usageText(state.analysis.usage)}`, "ok");
         toast("智谱 AI 已完成锁味分析。");
         return;
       } catch (error) {
@@ -607,10 +623,11 @@
     }
 
     async function loadProposals() {
-      const data = await postJson("/api/proposals", { analysis: state.analysis });
+      const data = await postJson("/api/proposals", { inviteCode: getInviteCode(), analysis: state.analysis });
       aiProposals = data.proposals || [];
       if (!aiProposals.length) throw new Error("AI 没有返回代餐方案。");
       state.selectedProposal = 0;
+      setStatus(`原创代餐方向已生成。${usageText(data.usage)}`, "ok");
       renderProposals();
     }
 
@@ -1167,6 +1184,7 @@
       if (isAppend) $("continueBtn").textContent = "AI 正在续写...";
       try {
         const data = await postJson("/api/generate", {
+          inviteCode: getInviteCode(),
           analysis: state.analysis,
           proposal,
           append: isAppend,

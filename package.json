@@ -1,0 +1,12 @@
+{
+  "name": "wenhuang-demo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Wenhuang rescue demo with Zhipu AI backend",
+  "scripts": {
+    "start": "node work/static-server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
