@@ -351,7 +351,7 @@ http.createServer((req, res) => {
     });
     res.end(data);
   });
-}).listen(port, "127.0.0.1", () => {
-  console.log(`Serving ${root} at http://127.0.0.1:${port}`);
+}).listen(port, "0.0.0.0", () => {
+  console.log(`Serving ${root} on 0.0.0.0:${port}`);
   console.log(`AI backend: ${zhipuApiKey ? "Zhipu enabled" : "missing ZHIPU_API_KEY"}`);
 });
